@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Weights & Biases
+wandb/
+wandb_api
+
+# Run logs
+runs/
+
+# Latex (not public)
+latex/
+recsys_latex/
+figures/
+exp/
+backups/
+
+# Baselines (not public)
+baselines/
+
+# Scripts (not public)
+scripts/
+
+# Raw/intermediate data
+data/bronze/
+data/silver/
+data/*.pdf
+data/*.md
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Claude
+.claude/
+CLAUDE.md
+
+# Local files (not public)
+readme_local.md
