@@ -44,8 +44,6 @@ def get_config():
                         help='Features: flnAC_HWYM. Static: f(first),l(last),n(users) | '
                              'Dynamic: A(age),C(count) | Cyclic: H(hour),W(week),M(month),Y(year)')
     # Logging
-    parser.add_argument('--wandb', action='store_true')
-    parser.add_argument('--wandb_project', type=str, default=None)
 
     args = parser.parse_args()
 

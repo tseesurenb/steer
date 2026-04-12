@@ -131,46 +131,6 @@ def get_device(device_arg):
         return torch.device('cpu')
     return torch.device('cpu')
 
-def get_wandb_name(args):
-    """Generate compact run name from command args (excludes dataset)."""
-    p = ['S']  # STEER
-
-    # Temporal mode
-    p.append(f"t{getattr(args, 't_mode', 'lnAC_WHYM')}")
-
-    # Non-default hyperparams (compact)
-    if args.dim != 64:
-        p.append(f"d{args.dim}")
-    if args.lr != 0.0001:
-        # 0.001->1e3, 0.0005->5e4
-        lr_exp = -int(f"{args.lr:.0e}".split('e')[1])
-        lr_coef = int(float(f"{args.lr:.0e}".split('e')[0]))
-        p.append(f"r{lr_coef}e{lr_exp}")
-    if args.blocks != 2:
-        p.append(f"b{args.blocks}")
-    if args.maxlen != 200:
-        p.append(f"l{args.maxlen}")
-
-    return "_".join(p)
-
-
-def init_wandb(args):
-    """Initialize wandb with auto-generated project and run name."""
-    import wandb
-
-    # Project name: dataset + timestamp
-    if args.wandb_project:
-        project = args.wandb_project
-    else:
-        date_str = datetime.now().strftime("%m%d")
-        project = f"{args.dataset}_{date_str}"
-
-    # Run name: all command info except dataset
-    run_name = get_wandb_name(args)
-
-    wandb.init(project=project, config=vars(args), name=run_name,
-               dir="/tmp", settings=wandb.Settings(init_timeout=300))
-
 def print_results(ndcg, hr, recall):
     """Print evaluation results with highlighting."""
     R = "\033[1;91m"  # Bold red

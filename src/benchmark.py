@@ -22,10 +22,10 @@ from config import get_config
 from data import get_data_loaders
 from evaluator import evaluate
 from trainer import Trainer
-from utils import set_seed, get_device, get_model, init_wandb, setup_model, get_experiment_summary, setup_logging
+from utils import set_seed, get_device, get_model, setup_model, get_experiment_summary, setup_logging
 
 
-def run_single(args, run_idx, device, wandb_log=False):
+def run_single(args, run_idx, device):
     """Run a single experiment and return test metrics."""
     seed = args.seed + run_idx
     set_seed(seed)
@@ -61,16 +61,6 @@ def run_single(args, run_idx, device, wandb_log=False):
             is_best = epoch >= args.warmup and current_score > best_val_score
             marker = " *" if is_best else ""
             print(f"Epoch {epoch}: Loss={loss:.4f}, Val NDCG@10={ndcg[10]:.4f}, Val HR@10={hr[10]:.4f}{marker}")
-
-            if wandb_log:
-                import wandb
-                wandb.log({
-                    "epoch": epoch,
-                    "run": run_idx,
-                    "loss": loss,
-                    "val/ndcg10": ndcg[10],
-                    "val/hr10": hr[10],
-                })
 
             if is_best:
                 best_val_score = current_score
@@ -177,60 +167,14 @@ def main():
         print(f"Using device: {device}")
         print(f"Running {args.runs} experiments with seeds {args.seed} to {args.seed + args.runs - 1}")
 
-        if args.wandb:
-            os.environ['WANDB_SILENT'] = 'true'
-            import wandb
-            args.wandb_group = f"{args.model}_{args.dataset}_benchmark"
-            init_wandb(args)
-
         all_results = []
         for run_idx in range(args.runs):
-            result = run_single(args, run_idx, device, wandb_log=args.wandb)
+            result = run_single(args, run_idx, device)
             all_results.append(result)
 
-            if args.wandb:
-                import wandb
-                wandb.log({
-                    f"test/run_{run_idx}/ndcg5": result['ndcg'][5],
-                    f"test/run_{run_idx}/ndcg10": result['ndcg'][10],
-                    f"test/run_{run_idx}/ndcg20": result['ndcg'][20],
-                    f"test/run_{run_idx}/hr5": result['hr'][5],
-                    f"test/run_{run_idx}/hr10": result['hr'][10],
-                    f"test/run_{run_idx}/hr20": result['hr'][20],
-                    f"test/run_{run_idx}/recall5": result['recall'][5],
-                    f"test/run_{run_idx}/recall10": result['recall'][10],
-                    f"test/run_{run_idx}/recall20": result['recall'][20],
-                })
 
         metrics = aggregate_results(all_results)
         print_benchmark_results(metrics, args)
-
-        if args.wandb:
-            import wandb
-            wandb.log({
-                "final/ndcg5_mean": metrics['ndcg@5']['mean'],
-                "final/ndcg5_std": metrics['ndcg@5']['std'],
-                "final/ndcg10_mean": metrics['ndcg@10']['mean'],
-                "final/ndcg10_std": metrics['ndcg@10']['std'],
-                "final/ndcg20_mean": metrics['ndcg@20']['mean'],
-                "final/ndcg20_std": metrics['ndcg@20']['std'],
-                "final/hr5_mean": metrics['hr@5']['mean'],
-                "final/hr5_std": metrics['hr@5']['std'],
-                "final/hr10_mean": metrics['hr@10']['mean'],
-                "final/hr10_std": metrics['hr@10']['std'],
-                "final/hr20_mean": metrics['hr@20']['mean'],
-                "final/hr20_std": metrics['hr@20']['std'],
-                "final/recall5_mean": metrics['recall@5']['mean'],
-                "final/recall5_std": metrics['recall@5']['std'],
-                "final/recall10_mean": metrics['recall@10']['mean'],
-                "final/recall10_std": metrics['recall@10']['std'],
-                "final/recall20_mean": metrics['recall@20']['mean'],
-                "final/recall20_std": metrics['recall@20']['std'],
-            })
-            run_url = wandb.run.get_url() if wandb.run else None
-            wandb.finish(quiet=True)
-            if run_url:
-                print(f"\nwandb: {run_url}")
 
     finally:
         logger.close()

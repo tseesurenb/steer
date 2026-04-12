@@ -1,10 +1,3 @@
-"""SASRec: Self-Attentive Sequential Recommendation with temporal encoding.
-
-Reference: Kang & McAuley, "Self-Attentive Sequential Recommendation", ICDM 2018
-
-This implementation includes temporal features using the same encoding as STEER
-but with standard self-attention (Q=K=V).
-"""
 import torch
 from torch import nn
 import torch.nn.functional as F
